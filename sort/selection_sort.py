@@ -1,7 +1,7 @@
-"Selection Sort"
+"Selection Sort 선택 정렬"
 
 # 정렬되지 않은 데이터들에 대해 가장 작은 데이터를 찾아 가장 앞의 데이터와 교환해가는 방식
-# 입력 값에 상관 없이 모든 곳을 탐색하기 때문에 입력에 민감하지 않고 항상 일정한 시간 복잡도를 가짐
+# 입력 값에 상관 없이 모든 곳을 탐색하기 때문에 입력에 민감하지 않고 항상 일정한 시간 복잡도를 가짐 "n(n-1)/2 번 수행"
 # 비교 횟수에 비해 교환 횟수는 상당히 적어 교환이 많이 이루어져야 하는 데이터 상태에 효율적
 # 시간 복잡도는 O(n²)
 
@@ -14,7 +14,7 @@ def swap(lst, x, y):
 
 def selection_sort(lst):
     "선택 정렬 함수"
-    length = len(lst)
+    length = len(lst)                       # 리스트 길이
     for i in range(length-1):
         least = i
         for j in range(i+1, length):        # 최솟값 탐색
