@@ -5,20 +5,13 @@
 # 버블 정렬을 매우 단순하지만 정렬할 데이터가 많은 경우에는 수행시간이 많이 걸림 "n(n-1)/2 번 수행"
 # 시간 복잡도는 O(n²)
 
-def swap(lst, x, y):
-    "입력 받은 2개의 리스트 자리를 서로 교환"
-    tmp = lst[x]
-    lst[x] = lst[y]
-    lst[y] = tmp
-    return lst
-
 def bubble_sort(lst):
     "버블 정렬 함수"
     length = len(lst)                       # 리스트 길이
     for i in range(length-1, 0, -1):
         for j in range(i):
             if lst[j] > lst[j+1]:           # j 번째보다 j+1 번째 요소가 작을 경우 교환
-                lst = swap(lst, j, j+1)
+                lst[j], lst[j+1] = lst[j+1], lst[j]
 
 lst = list(map(int, input().split()))       # 정렬할 리스트 입력
 
