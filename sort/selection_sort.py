@@ -5,13 +5,6 @@
 # 비교 횟수에 비해 교환 횟수는 상당히 적어 교환이 많이 이루어져야 하는 데이터 상태에 효율적
 # 시간 복잡도는 O(n²)
 
-def swap(lst, x, y):
-    "입력 받은 2개의 리스트 자리를 서로 교환"
-    tmp = lst[x]
-    lst[x] = lst[y]
-    lst[y] = tmp
-    return lst
-
 def selection_sort(lst):
     "선택 정렬 함수"
     length = len(lst)                       # 리스트 길이
@@ -21,7 +14,7 @@ def selection_sort(lst):
             if lst[j] < lst[least]:
                 least = j
         if i != least:                      # 최솟값이 자기 자신이면 자료 이동을 하지 않음
-            lst = swap(lst, i, least)
+            lst[i], lst[least] = lst[least], lst[i]
     return lst
 
 lst = list(map(int, input().split()))       # 정렬할 리스트 입력
