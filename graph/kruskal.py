@@ -6,45 +6,96 @@
 # 전체 n개의 정점에 대하여 n-1개의 간선이 연결되면 종료
 
 # 그래프에서 사이클의 판단은 서로소 집합 알고리즘(Union-Find)을 사용함
-# 이 알고리즘은 여러 노드가 존재할 때 두개의 노드를 선택해 루트를 확인하고 현재 서로 같은 그래프에 속하는 판별
-# Union 연산은 두 개의 집합을 하나의 집합으로 함치는 연산
-# Find 연산은 수행하면서 루트까지 올가는 경로 상의 각 노드의 부모 노드를 루트로 갱신, 이를 경로 압축이라 함
-# 경로 압축을 통하여 수행 시간을 단축시킬 수 있음
+# 서로소 집합알고리즘은 Disjoint Set을 표현할 떄 사용하는 알고리즘으로 트리 구졸르 활용
+# 간단하게, 노드들 중에 연결된 노드를 찾거나, 노드들을 서로 연결할(합칠) 때 사용
 
-def find(node, p):
-    "경로 압축을 위한 연결된 제일 최상단 부모 노드를 찾는 함수"
-    while node != p[node]:                                                  # 노드의 부모가 자기 자신 노드, 즉 제일 최상단 부모 노드일 때까지
-        node = p[node]                                                      # 노드의 부모 노드로 이동
+# Disjoint Set(서로소 집합 자료구조)이란 서로 중복되지 않는 부분 집합들로 나눠진 원소들에 대한 정보를 저장하고 조작하는 자료구조
+# 공통 원소가 없는 (서로소, 상호 배타적인) 부분 집합들로 나눠진 원소들에 대한 자료구조를 의미함
+
+# 서로소 집합 알고리즘은 다음과 같은 과정으로 진행
+# 1. 초기화 (n개의 원소가 개별 집합으로 이뤄지도록 초기화)
+# 2. Find (여러 노드가 존재할 떄, 두 개의 노드를 선택해서, 현재 두 노드가 서로 같은 그래프에 속하는지 판별하기 위해, 각 그룹의 최상단 원소(루트 노드)를 확인)
+# 3. Union (두 개별 집합을 하나의 집합으로 합침, 두 트리를 하나의 트리로 만듬)
+
+# Union-Find 알고리즘에서 고려할 점
+# Union 순서의 따라서, 최악의 경우, 링크드 리스트와 같은 형태(편향 트리 형태)가 될 수 있음
+# 이 경우, 계산량이 O(N)이 될 수 있으므로, 이를 해결하기 위하여 Union-by-rank, Path compression 기법 사용
+# 이를 사용할 경우, 계산량은 O(logN)으로 낮출 수 있음 
+
+# Union-by-rank 기법
+# 각 트리에 대해 높이(rank)를 기억해 두고, Union 시 두 트리의 높이가 다르면, 높이가 작은 트리를 높이가 큰 트리 아래에 붙임
+# 즉 높이가 작은 노드의 루트 노드의 부모 노드로 높이가 큰 노드의 루트 노드를 연결
+
+# Path Compression 기법
+# Find를 실행한 노드에서 거쳐간 노드를 루트에 다이렉트로 연결하는 기법
+# 즉 각 루트까지 연결된 노드들은 모두 루트 노드에 직접 연결하여 루트 노드를 한번에 알 수 있도록 만듬
+
+def find(node):
+    "경로 압축을 위한 연결된 제일 최상단 부모 노드를 찾는 함수, Path Compression 기법"
+    while node != parent[node]:                 # 노드의 부모가 자기 자신 노드, 즉 제일 최상단 부모 노드일 때까지
+        node = parent[node]                     # 노드의 부모 노드로 이동
     return node
 
-def union(n, m, p):
-    "경로가 연결되면 하나의 집합이 되기 때문에 하나의 집합으로 합치는 함수"
-    root1 = find(n, p)                                                      # 노드 n의 부모 노드 탐색
-    root2 = find(m, p)                                                      # 노드 m의 부모 노드 탐색
-    p[root2] = root1                                                        # 해당 노드들을 하나의 집합으로 합치기 위하여 임시적으로 하나의 최상단 부모 노드를 같은 노드로 만듬
-                                                                            # 이렇게 만들 경우, 이제 사이클이 발생했을 때, 같은 집합에 속해져 있는 것으로 판단되어 제거 가능함
-
-def kruskal(graph, node_num):
-    graph = sorted(graph, key=lambda x:x[2])                                # 그래프를 가중치 기준으로 오름차순 정렬
-    mst = []                                                                # 최소 신장 트리 리스트 생성
-    edge_cnt = 0                                                            # 노드 간선 개수 카운트
-    mst_cost = 0                                                            # 최소 신장 트리 비용
-
-    parent = [0]                                                            # 각 노드의 최상단 루트를 입력할 리스트 생성
-    for i in range(1, node_num+1):                                          # 초기 탐색은 선택 경로가 없어 아무 경로도 연결되지 않은 상태이기 때문에 각 노드를 자신의 최상단 루트로 초기화
-        parent.append(i)
+def union(node1, node2):
+    "경로가 연결되면 하나의 집합이 되기 때문에 하나의 집합으로 합치는 함수, Union-by-rank 기법"
+    root1 = find(node1)                         # node1의 부모 노드 탐색
+    root2 = find(node2)                         # node2의 부모 노드 탐색
     
-    while edge_cnt != node_num-1:                                           # 선택된 간선의 개수가 노드의 개수-1이 될 경우 종료
-        n, m, wt = graph.pop(0)                                             # 출발 노드와 도착 노드, 가중치를 그래프에서 가져옴
-        if find(n, parent) != find(m, parent):                              # 각 노드의 현재 최상단 부모 노드가 다를 경우, 즉 사이클이 발생하지 않은 경우 (같은 집합일 때)
-            union(n, m, parent)                                             # 경로를 선택하고 두개의 노드를 하나의 집합으로 합침
-            mst.append((n, m))                                              # 경로를 최소 신장 트리 리스트에 입력
-            mst_cost += wt                                                  # 가중치 누적
-            edge_cnt += 1                                                   # 선택된 간선 추가
-    return [mst, mst_cost]                                                  # 최소 신장 트리 및 가중치 리턴
+    if rank[root1] > rank[root2]:               # node1의 루트가 node2의 루트 보다 큰 경우
+        parent[root2] = root1                   # node2의 루트 노드의 부모 노드로 node1의 루트 노드를 연결
+    else:                                       # 나머지의 경우
+        if rank[root1] == rank[root2]:          # 만약 서로의 높이가 같은 경우, 
+            rank[root2] += 1                    # node2의 루트 노드의 높이를 임의적으로 1 높여서 연결
+        parent[root1] = root2                   # node1의 루트 노드의 부모 노드로 node2의 루트 노드를 연결
+    
+def init_list(node):
+    "초기화 함수"
+    parent[node] = node
+    rank[node] = 0
 
-graph = [(1,2,13),(1,3,5),(2,4,9),(3,4,15),(3,5,3),(4,5,1),(4,6,7),(5,6,2)] # 그래프 입력
-node_cnt = 6                                                                # 노드 개수 입력
-ans = kruskal(graph, node_cnt)
-print("Minimum Spanning Tree", ans[0])
-print("Weight Cost", ans[1])
+def kruskal(nodes, graph):
+    mst = list()
+    mst_weight = 0
+    
+    for node in nodes:                          # 초기화
+        init_list(node)
+    
+    graph.sort(key = lambda x:x[2])             # 가중치 기반 오름차순 정렬
+    
+    for edge in graph:
+        node1, node2, weight = edge
+        if find(node1) != find(node2):          # 두 개의 집합이 서로 다를 경우 (사이클을 생성하지 않는 경우)
+            union(node1, node2)                 # Union 연산
+            mst.append(edge)                    # 최소 신장 트리 경로로 추가
+            mst_weight += weight                # 최소 신장 트리 경로 가중치 누적
+            
+    return [mst, mst_weight]
+
+nodes = ['A', 'B', 'C', 'D', 'E', 'F', 'G']     # 노드 입력
+graph = [                                       # 그래프 입력
+    ('A','F',10),
+    ('A','B',29),
+    ('B','A',29),
+    ('B','C',16),
+    ('B','G',15),
+    ('C','B',16),
+    ('C','D',12),
+    ('D','C',12),
+    ('D','G',18),
+    ('D','E',22),
+    ('E','D',22),
+    ('E','G',25),
+    ('E','F',27),
+    ('F','A',10),
+    ('F','E',27),
+    ('G','B',15),
+    ('G','D',18),
+    ('G','E',25)
+]
+
+parent = dict()
+rank = dict()
+
+ans = kruskal(nodes, graph)
+print("Minimum Spanning Tree:", ans[0])
+print("Weight Cost:", ans[1])
